@@ -1,0 +1,7 @@
+[package]
+name = "quicksilver-pong"
+version = "0.1.0"
+authors = ["Mabry Cervin <mabry.cervin@gmail.com>"]
+
+[dependencies]
+quicksilver = "*"

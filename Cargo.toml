@@ -5,3 +5,5 @@ authors = ["Mabry Cervin <mabry.cervin@gmail.com>"]
 
 [dependencies]
 quicksilver = "*"
+ncollide2d = "*"
+nalgebra = "*"

@@ -1,6 +1,7 @@
 extern crate quicksilver;
 extern crate nalgebra as na;
 extern crate ncollide2d;
+extern crate rand;
 
 use na::{Isometry2, Vector2};
 use ncollide2d::shape::{Ball, Cuboid};
@@ -48,8 +49,8 @@ impl State for DrawGeometry {
             p2_bbox: Cuboid::new(Vector2::new(PADDLE_WIDTH, PADDLE_HEIGHT)),
 
             ball_pos: Vector::new(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0),
-            ball_dir: Vector::new(0.5, 0.5).normalize(),
-            ball_speed: 4.0,
+            ball_dir: Vector::new(2.0 * rand::random::<f32>(), rand::random::<f32>()).normalize(),
+            ball_speed: 6.0,
             ball_bbox: Ball::new(BALL_RADIUS)
         }
     }
@@ -75,6 +76,16 @@ impl State for DrawGeometry {
         if let Some(new_pos) = calc_position_change(self.p2_pos.y, self.p2_vel) {
             self.p2_pos.y = new_pos;
         }
+
+        // Ball
+        let mut new_ball_pos = (self.ball_dir * self.ball_speed) + self.ball_pos;
+
+        if (new_ball_pos.y < 0.0 || new_ball_pos.y > SCREEN_HEIGHT) {
+           self.ball_dir.y = -self.ball_dir.y;
+           new_ball_pos = (self.ball_dir * self.ball_speed) + self.ball_pos;
+        }
+
+        self.ball_pos = new_ball_pos;
 
         // Input
         // Player 1

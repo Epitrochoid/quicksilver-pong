@@ -7,3 +7,4 @@ authors = ["Mabry Cervin <mabry.cervin@gmail.com>"]
 quicksilver = "*"
 ncollide2d = "*"
 nalgebra = "*"
+rand = "*"

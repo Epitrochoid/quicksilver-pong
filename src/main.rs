@@ -4,8 +4,10 @@ extern crate ncollide2d;
 extern crate rand;
 
 use na::{Isometry2, Vector2};
-use ncollide2d::shape::{Ball, Cuboid};
-
+use ncollide2d::{
+    shape::{Ball, Cuboid},
+    bounding_volume::{self, BoundingVolume}
+};
 use quicksilver::{
     State, run,
     geom::{Circle, Rectangle, Transform, Vector},
@@ -43,7 +45,6 @@ impl State for DrawGeometry {
             p1_vel: 0.0,
             p1_bbox: Cuboid::new(Vector2::new(PADDLE_WIDTH, PADDLE_HEIGHT)),
 
-            //p2_pos: Vector::new(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2.0),
             p2_pos: Vector::new(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2.0 - PADDLE_HEIGHT / 2.0),
             p2_vel: 0.0,
             p2_bbox: Cuboid::new(Vector2::new(PADDLE_WIDTH, PADDLE_HEIGHT)),
@@ -56,6 +57,21 @@ impl State for DrawGeometry {
     }
 
     fn update(&mut self, window: &mut Window) {
+        // Collision
+        let p1_trans = Isometry2::new(self.p1_pos.into_vector(), na::zero());
+        let p1_vol = bounding_volume::aabb(&self.p1_bbox, &p1_trans);
+
+        let p2_trans = Isometry2::new(self.p2_pos.into_vector(), na::zero());
+        let p2_vol = bounding_volume::aabb(&self.p2_bbox, &p2_trans);
+
+        let ball_trans = Isometry2::new(self.ball_pos.into_vector(), na::zero());
+        let ball_vol = bounding_volume::aabb(&self.ball_bbox, &ball_trans);
+
+        if (ball_vol.intersects(&p1_vol) || ball_vol.intersects(&p2_vol)) {
+            self.ball_dir.x = -self.ball_dir.x;
+            self.ball_speed += 2.0;
+        }
+
         // Physics
         fn calc_position_change(y_pos: f32, y_vel: f32) -> Option<f32> {
             let new_pos = y_pos + y_vel;

@@ -27,10 +27,12 @@ struct DrawGeometry {
     p1_pos: Vector,
     p1_vel: f32,
     p1_bbox: Cuboid<f32>,
+    p1_score: i32,
 
     p2_pos: Vector,
     p2_vel: f32,
     p2_bbox: Cuboid<f32>,
+    p2_score: i32,
 
     ball_pos: Vector,
     ball_dir: Vector,
@@ -44,10 +46,12 @@ impl State for DrawGeometry {
             p1_pos: Vector::new(0.0, SCREEN_HEIGHT / 2.0 - PADDLE_HEIGHT / 2.0),
             p1_vel: 0.0,
             p1_bbox: Cuboid::new(Vector2::new(PADDLE_WIDTH, PADDLE_HEIGHT)),
+            p1_score: 0,
 
             p2_pos: Vector::new(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2.0 - PADDLE_HEIGHT / 2.0),
             p2_vel: 0.0,
             p2_bbox: Cuboid::new(Vector2::new(PADDLE_WIDTH, PADDLE_HEIGHT)),
+            p2_score: 0,
 
             ball_pos: Vector::new(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0),
             ball_dir: Vector::new(2.0 * rand::random::<f32>(), rand::random::<f32>()).normalize(),
@@ -67,9 +71,30 @@ impl State for DrawGeometry {
         let ball_trans = Isometry2::new(self.ball_pos.into_vector(), na::zero());
         let ball_vol = bounding_volume::aabb(&self.ball_bbox, &ball_trans);
 
-        if (ball_vol.intersects(&p1_vol) || ball_vol.intersects(&p2_vol)) {
+        if (ball_vol.intersects(&p1_vol)) {
+            self.ball_pos.x = PADDLE_WIDTH + BALL_RADIUS;
             self.ball_dir.x = -self.ball_dir.x;
             self.ball_speed += 2.0;
+        }
+
+        if (ball_vol.intersects(&p2_vol)) {
+            self.ball_pos.x = SCREEN_WIDTH - 2.0 * PADDLE_WIDTH - BALL_RADIUS;
+            self.ball_dir.x = -self.ball_dir.x;
+            self.ball_speed += 2.0;
+        }
+
+        if (self.ball_pos.x < 0.0) {
+            self.p1_score += 1;
+            self.ball_pos = Vector::new(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0);
+            self.ball_dir = Vector::new(2.0 * rand::random::<f32>(), rand::random::<f32>()).normalize();
+            self.ball_speed = 6.0;
+        }
+
+        if (self.ball_pos.x > SCREEN_WIDTH) {
+            self.p2_score += 1;
+            self.ball_pos = Vector::new(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0);
+            self.ball_dir = Vector::new(2.0 * rand::random::<f32>(), rand::random::<f32>()).normalize();
+            self.ball_speed = 6.0;
         }
 
         // Physics
